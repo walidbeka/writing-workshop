@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>التسجيل | ورشة كتابة</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.form-page{max-width:900px;margin:auto;padding:35px 0 80px}
+.form-box{background:#fff;border:1px solid #e5dfd8;border-radius:16px;padding:32px;box-shadow:0 15px 50px rgba(30,20,15,.06)}
+.form-step{display:none} .form-step.active{display:block}
+.choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:25px}
+.choice{border:1px solid #ddd5cd;border-radius:12px;padding:22px;text-align:right;cursor:pointer;transition:.2s;background:#fff}
+.choice:hover{transform:translateY(-2px);border-color:#8B1E2D}
+.choice.selected{border:2px solid #8B1E2D;background:#fff8f7}
+.choice h3{margin:12px 0 6px;font-size:21px} .choice p{font-size:13px;line-height:1.8;margin:0;color:#6b625c}
+.choice small{color:#8B1E2D;font-weight:700}
+.details{margin:25px 0;padding:22px;background:#faf7f4;border-radius:12px;line-height:1.9}
+.details ul{margin:12px 0 0;padding-right:20px} .details li{margin:6px 0}
+.price-hidden{display:none}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.field{display:flex;flex-direction:column;gap:7px} .field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:700} .field input,.field select,.field textarea{font:inherit;border:1px solid #d8d0c8;border-radius:9px;padding:12px;background:#fff;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#8B1E2D}
+.actions{display:flex;gap:10px;margin-top:25px} .actions button,.actions a{border:0;border-radius:9px;padding:13px 22px;font:inherit;cursor:pointer;text-decoration:none;text-align:center}
+.next,.submit{background:#8B1E2D;color:#fff} .back-btn{background:#eee7e1;color:#322c28}
+.note{font-size:12px;color:#746b65;line-height:1.8;margin-top:15px}
+.success{display:none;text-align:center;padding:45px 15px} .success h2{font-size:32px;margin-bottom:10px}
+.error{display:none;background:#fff0ef;color:#8B1E2D;padding:12px;border-radius:8px;margin-top:15px;font-size:13px}
+.loading{opacity:.65;pointer-events:none}
+@media(max-width:700px){
+.form-page{padding:20px 0 55px} .form-box{padding:20px 15px;border-radius:12px}
+.choice-grid{grid-template-columns:1fr;gap:10px} .choice{padding:17px}
+.form-grid{grid-template-columns:1fr} .field.full{grid-column:auto}
+.actions{flex-direction:column} .actions button,.actions a{width:100%}
+}
+</style>
+</head>
+<body>
+<header class="header">
+<a class="logo" href="index.html"><span class="logo-mark">ك</span><span>ورشة كتابة</span></a>
+<nav><a href="index.html#about">عن الورشة</a><a href="index.html#videos">الفيديوهات</a></nav>
+<a class="header-cta" href="https://www.facebook.com/warshtketaaba" target="_blank" rel="noopener">راسلنا</a>
+</header>
+
+<main class="form-page">
+<a class="back" href="index.html">← العودة للموقع</a>
+<section class="detail-hero" style="padding-bottom:35px">
+<div class="eyebrow">التسجيل</div>
+<h1 id="heroTitle">اختار طريقة<br><em>التعلم المناسبة ليك.</em></h1>
+<p id="heroSubtitle">اختار الورشة الأول، وبعدها هتظهر لك تفاصيلها ومميزاتها وخطوات التسجيل.</p>
+</section>
+
+<div class="form-box">
+<div id="step1" class="form-step active">
+<div class="section-label">01 / اختيار الورشة</div>
+<h2>إنت عاوز تشترك في أنهي ورشة؟</h2>
+<div class="choice-grid">
+<div class="choice" data-course="offline"><small>أوفلاين</small><h3>ورشة الكتابة الأوفلاين</h3><p>تدريب حضوري في مقر الورشة بميدان الجيزة.</p></div>
+<div class="choice" data-course="live"><small>أونلاين Live</small><h3>ورشة الكتابة الأونلاين</h3><p>محاضرة مباشرة أسبوعيًا على Google Meet.</p></div>
+<div class="choice" data-course="recorded"><small>مسجل</small><h3>كورس الكتابة المسجل</h3><p>المحتوى متاح ليك مدى الحياة وتدرسه في الوقت المناسب ليك.</p></div>
+</div>
+<p class="note">عندك سؤال قبل ما تختار؟ <a href="https://www.facebook.com/warshtketaaba" target="_blank" rel="noopener">راسلنا على صفحة ورشة كتابة</a>.</p>
+</div>
+
+<div id="step2" class="form-step">
+<div class="section-label">02 / تفاصيل الاشتراك</div>
+<h2 id="courseTitle"></h2>
+<div class="details" id="courseDetails"></div>
+<div class="actions">
+<button class="back-btn" type="button" id="back1">رجوع</button>
+<button class="next" type="button" id="next2">الانتقال إلى بيانات التسجيل</button>
+<a class="next" id="recordedCta" href="https://walid-mohammed-alqasim.nzmly.com/l/nXeBkJgTsO" target="_blank" rel="noopener" style="display:none">الانتقال إلى الكورس</a>
+</div>
+<p class="note" id="limitedNote">الأسعار الحالية لفترة محدودة.</p>
+</div>
+
+<div id="step3" class="form-step">
+<div class="section-label">03 / بياناتك</div>
+<h2>سجل بياناتك وهنكلمك.</h2>
+<iframe name="appsScriptTarget" id="appsScriptTarget" style="display:none"></iframe>
+<form id="registrationForm" target="appsScriptTarget" method="POST" action="https://script.google.com/macros/s/AKfycbx7zl1ZvIMJtcocel1ruTVfntINP6mLZEJPsu7yq-x-XbVDTMauwsQYMBvGlpXXvhDyrA/exec">
+<input type="hidden" name="workshop" id="workshop">
+<div class="form-grid">
+<div class="field"><label>الاسم بالكامل *</label><input name="fullName" required></div>
+<div class="field"><label>رقم الهاتف / WhatsApp *</label><input name="phone" type="tel" required></div>
+<div class="field"><label>البريد الإلكتروني *</label><input name="email" type="email" required></div>
+<div class="field"><label>المحافظة *</label><input name="governorate" required></div>
+<div class="field"><label>السن *</label><input name="age" type="number" min="14" required></div>
+<div class="field"><label>خبرتك في الكتابة</label><select name="experience"><option value="">اختار</option><option>لا، دي أول مرة</option><option>عندي تجربة بسيطة</option><option>عندي خبرة سابقة</option></select></div>
+<div class="field full"><label>ملاحظات أو سؤال</label><textarea name="notes" rows="4"></textarea></div>
+</div>
+<p class="note">بياناتك هتستخدم للتواصل معاك بخصوص الاشتراك في الورشة فقط.</p>
+<div class="error" id="errorBox">حصلت مشكلة أثناء إرسال البيانات. حاول مرة تانية أو راسلنا على الصفحة.</div>
+<div class="actions"><button class="back-btn" type="button" id="back2">رجوع</button><button class="submit" type="submit" id="submitBtn">إرسال بيانات التسجيل</button></div>
+</form>
+</div>
+
+<div id="success" class="success">
+<div class="section-label">تم التسجيل</div>
+<h2>وصلت بياناتك بنجاح.</h2>
+<p>شكرًا ليك. هنتواصل معاك بخصوص خطوات الاشتراك.</p>
+<a class="primary" href="index.html" style="display:inline-block;margin-top:20px">العودة للموقع</a>
+</div>
+</div>
+</main>
+<footer><span>© ورشة كتابة</span><a href="https://www.facebook.com/warshtketaaba" target="_blank" rel="noopener">Facebook</a></footer>
+
+<script src="supabase-config.js"></script>
+<script>
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbx7zl1ZvIMJtcocel1ruTVfntINP6mLZEJPsu7yq-x-XbVDTMauwsQYMBvGlpXXvhDyrA/exec';
+const FB = 'https://www.facebook.com/warshtketaaba';
+const RECORDED = 'https://walid-mohammed-alqasim.nzmly.com/l/nXeBkJgTsO';
+const courses = {
+ offline: {
+  name:"ورشة الكتابة الأوفلاين",
+  title:"ورشة الكتابة — أوفلاين",
+  price:"2100 جنيه",
+  old:"3000 جنيه",
+  details:"نفس محتوى ورشة الكتابة بالكامل، لكن الدراسة بتكون حضوري في مقر الورشة بميدان الجيزة.",
+  bullets:["6 محاضرات في الكتابة الإبداعية.","تطبيقات عملية بعد المحاضرات.","مراجعة مستمرة من المحاضر.","لقاء أسبوعي للأسئلة والمناقشة.","مجتمع ورشة كتابة على WhatsApp وFacebook.","مشروع تخرج كامل تتم مراجعته وتطويره حتى يصل لصورة جاهزة للنشر.","شهادة مجانية بعد إتمام مشروع التخرج.","تقدر تطلب الاشتراك في الكورس المسجل مجانًا للمراجعة في أي وقت."]
+ },
+ live: {
+  name:"ورشة الكتابة الأونلاين Live",
+  title:"ورشة الكتابة — أونلاين Live",
+  price:"1700 جنيه",
+  old:"2500 جنيه",
+  details:"نفس محتوى ورشة الكتابة بالكامل، من خلال محاضرة مباشرة أسبوعيًا على Google Meet.",
+  bullets:["6 محاضرات في الكتابة الإبداعية.","محاضرة مباشرة أسبوعيًا على Google Meet.","تطبيقات عملية بعد المحاضرات.","مراجعة مستمرة من المحاضر.","مجتمع ورشة كتابة على WhatsApp وFacebook.","مشروع تخرج كامل تتم مراجعته وتطويره حتى يصل لصورة جاهزة للنشر.","شهادة مجانية بعد إتمام مشروع التخرج.","تقدر تطلب الاشتراك في الكورس المسجل مجانًا للمراجعة في أي وقت."]
+ },
+ recorded: {
+  name:"كورس الكتابة المسجل",
+  title:"كورس الكتابة — مسجل",
+  price:"950 جنيه",
+  old:"1500 جنيه",
+  details:"نفس محتوى ورشة الكتابة بالكامل، لكن المحاضرات مسجلة ومتاحة ليك مدى الحياة.",
+  bullets:["6 محاضرات في الكتابة الإبداعية.","المحتوى متاح مدى الحياة.","تطبيقات عملية بعد المحاضرات.","مراجعة من المحاضر للتطبيقات.","ملفات PDF مساعدة.","مشروع تخرج كامل تتم مراجعته وتطويره حتى يصل لصورة جاهزة للنشر.","شهادة مجانية بعد إتمام مشروع التخرج."]
+ }
+};
+let selected = null;
+const staticPrices = {
+ offline: {price:"2100 جنيه", old:"3000 جنيه"},
+ live: {price:"1700 جنيه", old:"2500 جنيه"},
+ recorded: {price:"950 جنيه", old:"1500 جنيه"}
+};
+const step = n => document.querySelectorAll(".form-step").forEach((x,i)=>x.classList.toggle("active",i===n-1));
+
+async function loadLivePrices(){
+  // Optional Supabase price sync. If the table is unavailable, the approved static prices remain.
+  try {
+    if (!window.SUPABASE_URL || !window.SUPABASE_PUBLISHABLE_KEY) return;
+    const res = await fetch(window.SUPABASE_URL + "/rest/v1/workshop_prices?select=course_key,current_price,old_price", {
+      headers: {
+        apikey: window.SUPABASE_PUBLISHABLE_KEY,
+        Authorization: "Bearer " + window.SUPABASE_PUBLISHABLE_KEY
+      },
+      cache: "no-store"
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    rows.forEach(row => {
+      if (staticPrices[row.course_key]) {
+        courses[row.course_key].price = Number(row.current_price).toLocaleString("ar-EG") + " جنيه";
+        courses[row.course_key].old = Number(row.old_price).toLocaleString("ar-EG") + " جنيه";
+      }
+    });
+    if (selected) renderCourseDetails();
+  } catch (_) {}
+}
+function renderCourseDetails(){
+  const x=courses[selected];
+  const priceLine = selected === "recorded"
+    ? "<p><strong>السعر الحالي: "+x.price+"</strong> <del>"+x.old+"</del></p>"
+    : "<p><strong>السعر الحالي: "+x.price+"</strong> <del>"+x.old+"</del></p>";
+  document.getElementById("courseTitle").textContent=x.title;
+  document.getElementById("courseDetails").innerHTML="<p>"+x.details+"</p>"+priceLine+"<ul>"+x.bullets.map(b=>"<li>"+b+"</li>").join("")+"</ul>";
+  const isRecorded = selected === "recorded";
+  document.getElementById("next2").style.display=isRecorded ? "none" : "inline-block";
+  document.getElementById("recordedCta").style.display=isRecorded ? "inline-block" : "none";
+  document.getElementById("limitedNote").textContent = isRecorded
+    ? "لإتمام الاشتراك في الكورس المسجل، انتقل إلى صفحة الكورس."
+    : "الأسعار الحالية لفترة محدودة.";
+}
+document.querySelectorAll(".choice").forEach(c=>c.addEventListener("click",()=>{
+ document.querySelectorAll(".choice").forEach(x=>x.classList.remove("selected"));
+ c.classList.add("selected");
+ selected=c.dataset.course;
+ renderCourseDetails();
+ step(2);
+}));
+document.getElementById("next2").onclick=()=>{if(selected) step(3)};
+document.getElementById("back1").onclick=()=>step(1);
+document.getElementById("back2").onclick=()=>step(2);
+
+// If the visitor arrived from a specific workshop page, keep the selected workshop
+// and skip the chooser so the funnel continues directly to its details.
+const requestedCourse = new URLSearchParams(window.location.search).get("course");
+if (requestedCourse && courses[requestedCourse]) {
+  selected = requestedCourse;
+  const choice = document.querySelector('.choice[data-course="'+requestedCourse+'"]');
+  if (choice) choice.classList.add("selected");
+
+  // The visitor already chose the workshop before arriving here.
+  // This page is now for reviewing the details and continuing to registration.
+  document.getElementById("heroTitle").innerHTML = 'أنت على بعد خطوة<br><em>من البداية.</em>';
+  document.getElementById("heroSubtitle").textContent = 'راجع تفاصيل الورشة ومميزاتها، ولو مناسبة ليك سجّل بياناتك وابدأ.';
+
+  renderCourseDetails();
+  step(2);
+}
+
+loadLivePrices();
+document.getElementById("registrationForm").addEventListener("submit", e=>{
+ e.preventDefault();
+ if(!selected) return;
+
+ document.getElementById("workshop").value=courses[selected].name;
+ const form=document.getElementById("registrationForm");
+ const btn=document.getElementById("submitBtn");
+ const err=document.getElementById("errorBox");
+
+ btn.textContent="جاري إرسال البيانات...";
+ btn.classList.add("loading");
+ err.style.display="none";
+
+ // Native POST to the Apps Script Web App through a hidden iframe.
+ // This avoids browser CORS restrictions on GitHub Pages.
+ const payload = new FormData(form);
+ const tempForm = document.createElement("form");
+ tempForm.method = "POST";
+ tempForm.action = ENDPOINT;
+ tempForm.target = "appsScriptTarget";
+ tempForm.style.display = "none";
+
+ for (const [key, value] of payload.entries()) {
+   const input = document.createElement("input");
+   input.type = "hidden";
+   input.name = key;
+   input.value = value;
+   tempForm.appendChild(input);
+ }
+
+ document.body.appendChild(tempForm);
+ tempForm.submit();
+ tempForm.remove();
+
+ // Apps Script receives the POST independently; show confirmation after submission.
+ setTimeout(()=>{
+   document.getElementById("step3").classList.remove("active");
+   document.getElementById("success").style.display="block";
+   btn.textContent="إرسال بيانات التسجيل";
+   btn.classList.remove("loading");
+ }, 900);
+});
+</script>
+</body></html>

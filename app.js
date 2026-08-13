@@ -1,0 +1,8 @@
+const GOOGLE_SCRIPT_URL="YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+const params=new URLSearchParams(location.search),course=params.get("course");
+const names={offline:"ورشة الكتابة — أوفلاين",live:"ورشة الكتابة — أونلاين Live"};
+const input=document.querySelector("#course"),selected=document.querySelector("#selected"),form=document.querySelector("#registrationForm"),status=document.querySelector("#status");
+if(input){input.value=names[course]||"";if(selected)selected.textContent=names[course]?`أنت تسجل الآن في: ${names[course]}`:"لم يتم تحديد الورشة."}
+form?.addEventListener("submit",async e=>{e.preventDefault();if(!names[course])return;const btn=form.querySelector("button"),data=Object.fromEntries(new FormData(form).entries());btn.disabled=true;btn.textContent="جارٍ الإرسال...";
+if(GOOGLE_SCRIPT_URL.startsWith("YOUR_")){status.hidden=false;status.textContent="الفورم جاهز، لكن يحتاج ربط Google Sheets. ضع رابط Google Apps Script في app.js.";btn.disabled=false;btn.textContent="إرسال طلب التسجيل";return}
+try{await fetch(GOOGLE_SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});form.reset();status.hidden=false;status.textContent="تم إرسال بياناتك بنجاح. سنتواصل معك لاستكمال التسجيل."}catch(err){status.hidden=false;status.textContent="حدثت مشكلة. تواصل معنا عبر رسائل الصفحة."}finally{btn.disabled=false;btn.textContent="إرسال طلب التسجيل"}});
