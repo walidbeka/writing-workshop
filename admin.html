@@ -8,80 +8,352 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <style>
-body{background:#f7f4f1}.admin-wrap{max-width:900px;margin:40px auto;padding:0 18px}
+body{background:#f7f4f1}
+.admin-wrap{max-width:900px;margin:40px auto;padding:0 18px}
 .panel{background:#fff;border:1px solid #e4ddd7;border-radius:16px;padding:28px;box-shadow:0 12px 35px rgba(0,0,0,.05)}
-.field{margin:12px 0}label{display:block;font-weight:700;margin-bottom:7px}input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #d8d0c8;border-radius:9px;font:inherit}
-button{border:0;border-radius:9px;padding:12px 18px;font:inherit;cursor:pointer}.primary{background:#8B1E2D;color:#fff}.muted{background:#eee7e1}
-.login-only,.dashboard{display:none}.login-only.active,.dashboard.active{display:block}
-.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end;border-top:1px solid #eee;padding:18px 0}
-.msg{margin:12px 0;padding:10px;border-radius:8px;display:none}.ok{background:#eaf7ee;color:#176b35}.err{background:#fff0ef;color:#8B1E2D}
-@media(max-width:700px){.row{grid-template-columns:1fr}}
+.field{margin:12px 0}
+label{display:block;font-weight:700;margin-bottom:7px}
+input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #d8d0c8;border-radius:9px;font:inherit}
+button{border:0;border-radius:9px;padding:12px 18px;font:inherit;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+.primary{background:#8B1E2D;color:#fff}
+.muted{background:#eee7e1}
+.login-only,.dashboard{display:none}
+.login-only.active,.dashboard.active{display:block}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;border-top:1px solid #eee;padding:18px 0}
+.msg{margin:12px 0;padding:10px;border-radius:8px;display:none}
+.ok{background:#eaf7ee;color:#176b35}
+.err{background:#fff0ef;color:#8B1E2D}
+.status{font-size:13px;color:#777;margin-top:8px}
+@media(max-width:700px){
+  .row{grid-template-columns:1fr}
+  .panel{padding:20px}
+}
 </style>
 </head>
+
 <body>
 <div class="admin-wrap">
-<div class="panel login-only active" id="login">
-<h1>دخول لوحة التحكم</h1>
-<p>هذه الصفحة مخصصة لإدارة أسعار الورش.</p>
-<div class="field"><label>البريد الإلكتروني</label><input id="email" type="email" autocomplete="username"></div>
-<div class="field"><label>كلمة المرور</label><input id="password" type="password" autocomplete="current-password"></div>
-<div class="msg err" id="loginErr"></div>
-<button class="primary" id="loginBtn">دخول</button>
-</div>
 
-<div class="panel dashboard" id="dashboard">
-<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
-<div><h1>لوحة التحكم</h1><p id="userEmail"></p></div>
-<button class="muted" id="logoutBtn">تسجيل الخروج</button>
-</div>
-<div class="msg ok" id="saveOk">تم حفظ الأسعار.</div>
-<div class="msg err" id="saveErr"></div>
-<div id="prices"></div>
-</div>
+  <div class="panel login-only active" id="login">
+    <h1>دخول لوحة التحكم</h1>
+    <p>هذه الصفحة مخصصة لإدارة أسعار الورش.</p>
+
+    <div class="field">
+      <label for="email">البريد الإلكتروني</label>
+      <input id="email" type="email" autocomplete="username">
+    </div>
+
+    <div class="field">
+      <label for="password">كلمة المرور</label>
+      <input id="password" type="password" autocomplete="current-password">
+    </div>
+
+    <div class="msg err" id="loginErr"></div>
+    <button class="primary" id="loginBtn" type="button">دخول</button>
+    <div class="status" id="loginStatus"></div>
+  </div>
+
+  <div class="panel dashboard" id="dashboard">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+      <div>
+        <h1>لوحة التحكم</h1>
+        <p id="userEmail"></p>
+      </div>
+      <button class="muted" id="logoutBtn" type="button">تسجيل الخروج</button>
+    </div>
+
+    <div class="msg ok" id="saveOk"></div>
+    <div class="msg err" id="saveErr"></div>
+    <div id="prices"></div>
+  </div>
+
 </div>
 
 <script>
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
-const login = document.getElementById('login'), dashboard = document.getElementById('dashboard');
-const show = (el,on)=>el.classList.toggle('active',on);
-const error = (msg)=>{const e=document.getElementById('loginErr');e.textContent=msg;e.style.display='block'};
+(() => {
+  "use strict";
 
-async function init(){
- const {data}=await supabase.auth.getSession();
- if(data.session) {
-   if(data.session.user.email !== "wmr77077@gmail.com") { await supabase.auth.signOut(); error("هذا الحساب غير مصرح له بالدخول."); }
-   else openDashboard(data.session);
- } else show(login,true);
-}
-async function openDashboard(session){
- show(login,false); show(dashboard,true); document.getElementById('userEmail').textContent=session.user.email;
- const {data,error:err}=await supabase.from('workshop_prices').select('*').order('id');
- if(err){document.getElementById('saveErr').textContent=err.message;document.getElementById('saveErr').style.display='block';return}
- document.getElementById('prices').innerHTML=data.map(x=>`
- <div class="row">
-   <div><strong>${x.course_name}</strong><div style="font-size:12px;color:#777">${x.course_key}</div></div>
-   <div class="field"><label>السعر الحالي</label><input type="number" id="cur-${x.course_key}" value="${x.current_price}"></div>
-   <div class="field"><label>السعر قبل الخصم</label><input type="number" id="old-${x.course_key}" value="${x.old_price}"></div>
-   <button class="primary" onclick="savePrice('${x.course_key}')">حفظ</button>
- </div>`).join('');
-}
-window.savePrice=async function(key){
- const current=Number(document.getElementById('cur-'+key).value), old=Number(document.getElementById('old-'+key).value);
- const {error:err}=await supabase.from('workshop_prices').update({current_price:current,old_price:old,updated_at:new Date().toISOString()}).eq('course_key',key);
- const ok=document.getElementById('saveOk'), bad=document.getElementById('saveErr');
- if(err){bad.textContent=err.message;bad.style.display='block';ok.style.display='none'} else {ok.style.display='block';bad.style.display='none';setTimeout(()=>ok.style.display='none',2200)}
-}
-document.getElementById('loginBtn').onclick=async()=>{
- const email=document.getElementById('email').value.trim(), password=document.getElementById('password').value;
- const {data,error:err}=await supabase.auth.signInWithPassword({email,password});
- if(err) return error(err.message);
- openDashboard(data.session);
-};
-document.getElementById('logoutBtn').onclick=async()=>{await supabase.auth.signOut();show(dashboard,false);show(login,true)};
-supabase.auth.onAuthStateChange((_event,session)=>{
-  if(session && session.user.email === "wmr77077@gmail.com") openDashboard(session);
-});
-init();
+  const ADMIN_EMAIL = "wmr77077@gmail.com";
+
+  if (!window.supabase || !window.SUPABASE_URL || !window.SUPABASE_PUBLISHABLE_KEY) {
+    const box = document.getElementById("loginErr");
+    box.textContent = "تعذر تشغيل لوحة التحكم: إعدادات Supabase غير موجودة أو غير صحيحة.";
+    box.style.display = "block";
+    return;
+  }
+
+  const client = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_PUBLISHABLE_KEY
+  );
+
+  const login = document.getElementById("login");
+  const dashboard = document.getElementById("dashboard");
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const loginErr = document.getElementById("loginErr");
+  const loginStatus = document.getElementById("loginStatus");
+  const prices = document.getElementById("prices");
+  const saveOk = document.getElementById("saveOk");
+  const saveErr = document.getElementById("saveErr");
+
+  let dashboardLoading = false;
+
+  function show(el, visible) {
+    el.classList.toggle("active", visible);
+  }
+
+  function showLoginError(message) {
+    loginErr.textContent = message;
+    loginErr.style.display = "block";
+  }
+
+  function clearLoginError() {
+    loginErr.textContent = "";
+    loginErr.style.display = "none";
+  }
+
+  function showSaveError(message) {
+    saveErr.textContent = message;
+    saveErr.style.display = "block";
+    saveOk.style.display = "none";
+  }
+
+  function hideSaveMessages() {
+    saveErr.style.display = "none";
+    saveOk.style.display = "none";
+  }
+
+  function setLoginLoading(loading) {
+    loginBtn.disabled = loading;
+    loginBtn.textContent = loading ? "جارٍ الدخول..." : "دخول";
+  }
+
+  function isAdmin(session) {
+    return !!(
+      session &&
+      session.user &&
+      session.user.email &&
+      session.user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()
+    );
+  }
+
+  async function loadPrices(session) {
+    if (dashboardLoading) return;
+    dashboardLoading = true;
+
+    show(login, false);
+    show(dashboard, true);
+    document.getElementById("userEmail").textContent = session.user.email;
+    prices.innerHTML = "<p>جارٍ تحميل الأسعار...</p>";
+    hideSaveMessages();
+
+    const { data, error: err } = await client
+      .from("workshop_prices")
+      .select("id,course_key,course_name,current_price,old_price,updated_at")
+      .order("id", { ascending: true });
+
+    dashboardLoading = false;
+
+    if (err) {
+      prices.innerHTML = "";
+      showSaveError("تعذر تحميل الأسعار: " + err.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      prices.innerHTML = "<p>لا توجد أسعار في جدول الورش حاليًا.</p>";
+      return;
+    }
+
+    prices.innerHTML = data.map(item => {
+      const safeKey = String(item.course_key).replace(/[^a-zA-Z0-9_-]/g, "_");
+      return `
+        <div class="row">
+          <div>
+            <strong>${escapeHtml(item.course_name || "")}</strong>
+            <div style="font-size:12px;color:#777">${escapeHtml(item.course_key || "")}</div>
+          </div>
+
+          <div class="field">
+            <label>السعر الحالي</label>
+            <input
+              type="number"
+              min="0"
+              id="cur-${safeKey}"
+              value="${Number(item.current_price || 0)}"
+            >
+          </div>
+
+          <div class="field">
+            <label>السعر قبل الخصم</label>
+            <input
+              type="number"
+              min="0"
+              id="old-${safeKey}"
+              value="${Number(item.old_price || 0)}"
+            >
+          </div>
+
+          <button
+            class="primary save-price"
+            type="button"
+            data-key="${escapeHtml(item.course_key || "")}"
+            data-safe-key="${safeKey}"
+          >
+            حفظ
+          </button>
+        </div>
+      `;
+    }).join("");
+
+    document.querySelectorAll(".save-price").forEach(button => {
+      button.addEventListener("click", () => {
+        savePrice(button.dataset.key, button.dataset.safeKey, button);
+      });
+    });
+  }
+
+  async function savePrice(key, safeKey, button) {
+    hideSaveMessages();
+
+    const currentInput = document.getElementById("cur-" + safeKey);
+    const oldInput = document.getElementById("old-" + safeKey);
+
+    const current = Number(currentInput.value);
+    const old = Number(oldInput.value);
+
+    if (!Number.isFinite(current) || !Number.isFinite(old) || current < 0 || old < 0) {
+      showSaveError("من فضلك أدخل أسعارًا صحيحة.");
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "جارٍ الحفظ...";
+
+    const { error: err } = await client
+      .from("workshop_prices")
+      .update({
+        current_price: current,
+        old_price: old,
+        updated_at: new Date().toISOString()
+      })
+      .eq("course_key", key);
+
+    button.disabled = false;
+    button.textContent = "حفظ";
+
+    if (err) {
+      showSaveError("تعذر حفظ السعر: " + err.message);
+      return;
+    }
+
+    saveOk.textContent = "تم حفظ سعر " + key + " بنجاح.";
+    saveOk.style.display = "block";
+    saveErr.style.display = "none";
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  async function loginUser() {
+    clearLoginError();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      showLoginError("اكتب البريد الإلكتروني وكلمة المرور.");
+      return;
+    }
+
+    setLoginLoading(true);
+    loginStatus.textContent = "";
+
+    const { data, error: err } = await client.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (err) {
+      setLoginLoading(false);
+      showLoginError(err.message);
+      return;
+    }
+
+    if (!isAdmin(data.session)) {
+      await client.auth.signOut();
+      setLoginLoading(false);
+      showLoginError("هذا الحساب غير مصرح له بالدخول إلى لوحة التحكم.");
+      return;
+    }
+
+    setLoginLoading(false);
+    await loadPrices(data.session);
+  }
+
+  async function logout() {
+    await client.auth.signOut();
+    dashboardLoading = false;
+    show(dashboard, false);
+    show(login, true);
+    document.getElementById("password").value = "";
+    clearLoginError();
+  }
+
+  loginBtn.addEventListener("click", loginUser);
+  logoutBtn.addEventListener("click", logout);
+
+  document.getElementById("password").addEventListener("keydown", event => {
+    if (event.key === "Enter") loginUser();
+  });
+
+  client.auth.onAuthStateChange(async (_event, session) => {
+    if (!session) {
+      dashboardLoading = false;
+      show(dashboard, false);
+      show(login, true);
+      return;
+    }
+
+    if (!isAdmin(session)) {
+      await client.auth.signOut();
+      return;
+    }
+
+    if (_event === "SIGNED_IN" || _event === "INITIAL_SESSION") {
+      await loadPrices(session);
+    }
+  });
+
+  client.auth.getSession().then(async ({ data, error: err }) => {
+    if (err) {
+      showLoginError("تعذر التحقق من جلسة الدخول: " + err.message);
+      return;
+    }
+
+    if (!data.session) {
+      show(login, true);
+      return;
+    }
+
+    if (!isAdmin(data.session)) {
+      await client.auth.signOut();
+      show(login, true);
+      showLoginError("هذا الحساب غير مصرح له بالدخول.");
+      return;
+    }
+
+    await loadPrices(data.session);
+  });
+})();
 </script>
 </body>
 </html>
